@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>Live probe · mind trainer</title>
+<style>
+  :root {
+    --bg: #0e1013;
+    --panel: #15181c;
+    --panel-2: #191d22;
+    --panel-3: #1e232a;
+    --border: #272c34;
+    --border-strong: #343b45;
+    --text: #d9dde3;
+    --muted: #8c939e;
+    --dim: #5f6671;
+    --accent: #d19a66;
+    --accent-soft: rgba(209, 154, 102, 0.12);
+    --accent-border: rgba(209, 154, 102, 0.5);
+    --danger: #c47a72;
+    --radius: 7px;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    font-size: 12px;
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+  }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+    outline: 1px solid var(--accent);
+    outline-offset: 2px;
+  }
+  kbd {
+    font: 10px/1 "Segoe UI", system-ui, sans-serif;
+    color: var(--dim);
+    border: 1px solid var(--border);
+    border-bottom-color: var(--border-strong);
+    border-radius: 4px;
+    padding: 2px 4px;
+    background: var(--bg);
+  }
+  .app { height: 100%; display: grid; grid-template-rows: auto minmax(0, 1fr) 220px 28px; }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+    padding: 10px 14px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .mark {
+    width: 26px; height: 26px;
+    display: grid; place-items: center;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    color: var(--accent);
+    background: var(--panel-2);
+    flex: 0 0 26px;
+  }
+  .product {
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+  .title {
+    font-size: 13px;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 260px;
+  }
+  .controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-left: auto; }
+  .control {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--dim);
+    white-space: nowrap;
+  }
+  .control select {
+    height: 26px;
+    border: 1px solid var(--border);
+    background: var(--panel-2);
+    color: var(--muted);
+    border-radius: 5px;
+    padding: 0 6px;
+    font-size: 10.5px;
+  }
+  .control input[type="range"] { width: 76px; accent-color: var(--accent); }
+  .control input[type="checkbox"] { accent-color: var(--accent); }
+  .lang {
+    display: inline-flex;
+    padding: 2px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg);
+  }
+  .lang button {
+    min-width: 28px;
+    height: 24px;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--dim);
+    font-size: 10px;
+    letter-spacing: 0.04em;
+  }
+  .lang button:hover { color: var(--text); }
+  .lang button.active {
+    color: #f3dfc9;
+    background: var(--accent-soft);
+    box-shadow: inset 0 0 0 1px var(--accent-border);
+  }
+  .tool, .primary, .ghost {
+    height: 27px;
+    padding: 0 9px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    background: var(--panel-2);
+    color: var(--muted);
+    font-size: 10.5px;
+    white-space: nowrap;
+    transition: 0.12s ease;
+  }
+  .tool:hover, .ghost:hover { color: var(--text); border-color: var(--border-strong); background: var(--panel-3); }
+  .primary {
+    color: #f3dfc9;
+    border-color: var(--accent-border);
+    background: var(--accent-soft);
+  }
+  .primary:hover { background: rgba(209, 154, 102, 0.2); }
+  .primary.off { color: var(--muted); border-color: var(--border-strong); background: var(--panel-2); }
+
+  .workspace { display: grid; grid-template-columns: minmax(0, 1fr) 420px; min-height: 0; }
+  .text-pane {
+    min-width: 0;
+    min-height: 0;
+    overflow: auto;
+    padding: 34px 48px 60px;
+    background: var(--bg);
+  }
+  .text-pane::-webkit-scrollbar { width: 8px; }
+  .text-pane::-webkit-scrollbar-thumb { background: #2b3139; border-radius: 4px; }
+  .text-head {
+    max-width: 760px;
+    margin: 0 auto 18px;
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: baseline;
+  }
+  .eyebrow {
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+  .hint { font-size: 10px; color: var(--dim); }
+  #text {
+    max-width: 760px;
+    margin: 0 auto;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 19px;
+    line-height: 1.75;
+    color: #d9dde3;
+  }
+  #text p { margin: 0 0 1.05em; }
+  .text-foot {
+    max-width: 760px;
+    margin: 28px auto 0;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    color: var(--dim);
+    font-size: 10px;
+  }
+
+  .probe-pane {
+    position: relative;
+    min-height: 0;
+    border-left: 1px solid var(--border);
+    background:
+      radial-gradient(circle at 50% 42%, rgba(209, 154, 102, 0.07), transparent 62%),
+      #111318;
+    overflow: hidden;
+  }
+  #scene {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    opacity: 1;
+    transition: opacity 0.12s ease;
+  }
+  .probe-pane.off #scene { opacity: 0; }
+  .probe-hud {
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--dim);
+    pointer-events: none;
+  }
+  .probe-empty {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    color: var(--dim);
+    font-size: 11px;
+    line-height: 1.9;
+    letter-spacing: 0.06em;
+    opacity: 0;
+    transition: opacity 0.12s ease;
+    pointer-events: none;
+  }
+  .probe-pane.off .probe-empty { opacity: 1; }
+
+  .log-pane {
+    border-top: 1px solid var(--border);
+    background: var(--panel);
+    padding: 9px 14px 12px;
+    display: grid;
+    grid-template-rows: auto auto minmax(0, 1fr);
+    gap: 7px;
+    min-height: 0;
+  }
+  .log-head { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .summary { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; min-width: 0; }
+  .chip {
+    border: 1px solid var(--border);
+    background: var(--panel-2);
+    border-radius: 999px;
+    padding: 3px 8px;
+    font-size: 10px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .chip b { color: var(--text); font-weight: 500; }
+  .note-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .rating { display: inline-flex; gap: 2px; }
+  .rating button {
+    width: 24px; height: 24px;
+    border: 1px solid var(--border);
+    background: var(--panel-2);
+    color: var(--dim);
+    border-radius: 4px;
+    font-size: 10px;
+  }
+  .rating button.active {
+    color: #f3dfc9;
+    border-color: var(--accent-border);
+    background: var(--accent-soft);
+  }
+  #note {
+    flex: 1;
+    min-width: 180px;
+    height: 28px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    border-radius: 5px;
+    padding: 0 9px;
+    color: var(--text);
+  }
+  #note::placeholder { color: var(--dim); }
+  .log {
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-height: 0;
+  }
+  .log::-webkit-scrollbar { width: 8px; }
+  .log::-webkit-scrollbar-thumb { background: #2b3139; border-radius: 4px; }
+  .log-empty { color: var(--dim); font-size: 10.5px; padding: 6px 2px; }
+  .log-entry {
+    border: 1px solid var(--border);
+    background: var(--panel-2);
+    border-radius: 5px;
+    padding: 6px 8px;
+  }
+  .log-top { display: flex; align-items: center; gap: 8px; font-size: 9.5px; color: var(--dim); }
+  .log-shape { color: var(--accent); text-transform: uppercase; letter-spacing: 0.1em; }
+  .log-rating { margin-left: auto; color: var(--accent); }
+  .log-note { margin-top: 3px; font-size: 11.5px; color: var(--muted); line-height: 1.4; }
+  .log-note.empty { color: var(--dim); font-style: italic; }
+  .log-remove {
+    border: 0;
+    background: transparent;
+    color: var(--dim);
+    cursor: pointer;
+    font-size: 13px;
+    line-height: 1;
+    padding: 0 2px;
+  }
+  .log-remove:hover { color: var(--danger); }
+
+  .statusbar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0 14px;
+    background: var(--panel-2);
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 10px;
+    white-space: nowrap;
+    overflow-x: auto;
+  }
+  .keys { display: flex; align-items: center; gap: 14px; }
+  .keys > span { display: inline-flex; align-items: center; gap: 5px; }
+  .statusbar kbd { color: var(--text); border-color: var(--border-strong); }
+  .status-mode { margin-left: auto; color: var(--dim); }
+  .timer { display: flex; align-items: center; gap: 4px; }
+  .timer-btn {
+    height: 20px;
+    padding: 0 7px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    border-radius: 4px;
+    color: var(--muted);
+    font-size: 10px;
+    font-variant-numeric: tabular-nums;
+  }
+  .timer-btn.running {
+    color: #f3dfc9;
+    border-color: var(--accent-border);
+    background: var(--accent-soft);
+  }
+  .timer-reset {
+    border: 0;
+    background: transparent;
+    color: var(--dim);
+    font-size: 12px;
+    padding: 0 2px;
+  }
+  .timer-reset:hover { color: var(--text); }
+
+  dialog {
+    border: 1px solid var(--border-strong);
+    background: var(--panel);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 0;
+    width: min(720px, calc(100vw - 40px));
+  }
+  dialog::backdrop { background: rgba(0, 0, 0, 0.55); }
+  .dialog-body { padding: 18px; display: grid; gap: 12px; }
+  .dialog-body h2 { font-size: 13px; font-weight: 500; margin: 0; letter-spacing: 0.04em; }
+  #text-input {
+    width: 100%;
+    height: 300px;
+    resize: vertical;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    border-radius: 5px;
+    padding: 10px;
+    font: 13px/1.6 Georgia, serif;
+  }
+  .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; }
+
+  @media (max-width: 920px) {
+    .app { grid-template-rows: auto minmax(0, 1fr) 240px 28px; }
+    .workspace { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) 280px; }
+    .probe-pane { border-left: 0; border-top: 1px solid var(--border); }
+    .text-pane { padding: 24px 22px 40px; }
+    #text { font-size: 18px; }
+    .title { max-width: 180px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="mark" aria-hidden="true">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <circle cx="8" cy="8" r="5.2" stroke="currentColor"/>
+          <circle cx="8" cy="8" r="1.6" fill="currentColor" stroke="none"/>
+        </svg>
+      </div>
+      <div>
+        <div class="product" data-i18n="product">Live probe</div>
+        <div class="title" id="text-title">The Index</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button id="toggle" class="primary">Probe on <kbd>Space</kbd></button>
+      <label class="control"><span data-i18n="form">Form</span>
+        <select id="shape">
+          <option value="sphere">Sphere</option>
+          <option value="cube">Cube</option>
+          <option value="octa">Octahedron</option>
+          <option value="torus">Torus</option>
+          <option value="cone">Cone</option>
+          <option value="cylinder">Cylinder</option>
+          <option value="dodeca">Dodecahedron</option>
+          <option value="tetra">Tetrahedron</option>
+          <option value="torusLow">Faceted torus</option>
+        </select>
+      </label>
+      <label class="control"><span data-i18n="motion">Motion</span>
+        <input type="checkbox" id="motion" checked>
+      </label>
+      <label class="control"><span data-i18n="size">Size</span>
+        <input type="range" id="size" min="0.55" max="1.45" step="0.05" value="1">
+      </label>
+      <button id="next-text" class="tool" title="Next text (T)" data-i18n="nextText" data-i18n-title="nextTextTitle">Text →</button>
+      <button id="edit-text" class="tool" data-i18n="customText">Custom text</button>
+      <button id="export" class="tool" title="Export (E)" data-i18n="export" data-i18n-title="exportTitle">Export</button>
+      <div class="lang" id="lang" role="group" aria-label="Language" data-i18n-aria="langLabel">
+        <button type="button" data-lang="en" class="active">EN</button>
+        <button type="button" data-lang="ru">RU</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <section class="text-pane">
+      <div class="text-head">
+        <span class="eyebrow" data-i18n="textEyebrow">Text for the probe</span>
+        <span class="hint" data-i18n="textHint">Read and switch the probe. Watch the process, not the result.</span>
+      </div>
+      <article id="text"></article>
+      <div class="text-foot">
+        <span id="word-count">—</span>
+        <span data-i18n="textFoot">The probe can be switched on the fly</span>
+      </div>
+    </section>
+
+    <section class="probe-pane" id="probe-pane">
+      <canvas id="scene"></canvas>
+      <div class="probe-hud">
+        <span id="shape-label">Sphere</span>
+        <span id="state-label">on</span>
+      </div>
+      <div class="probe-empty">
+        <span data-i18n="probeOff">Probe is off</span><br>
+        <kbd>Space</kbd> <span data-i18n="probeOffHint">to bring it back</span>
+      </div>
+    </section>
+  </main>
+
+  <footer class="log-pane">
+    <div class="log-head">
+      <span class="eyebrow" data-i18n="notes">Notes</span>
+      <div class="summary" id="summary"></div>
+      <button id="clear-log" class="tool" title="Clear the log" data-i18n="clear" data-i18n-title="clearTitle">Clear</button>
+    </div>
+    <div class="note-row">
+      <div class="rating" id="rating" role="group" aria-label="Strength of change" data-i18n-aria="ratingLabel">
+        <button type="button" data-r="1" title="Weak" data-i18n-title="rating1">1</button>
+        <button type="button" data-r="2" title="Noticeable" data-i18n-title="rating2">2</button>
+        <button type="button" data-r="3" title="Medium" data-i18n-title="rating3">3</button>
+        <button type="button" data-r="4" title="Strong" data-i18n-title="rating4">4</button>
+        <button type="button" data-r="5" title="Very strong" data-i18n-title="rating5">5</button>
+      </div>
+      <input id="note" placeholder="What changed right now?" data-i18n-placeholder="notePlaceholder">
+      <button id="save-note" class="primary" data-i18n="save">Save</button>
+    </div>
+    <div class="log" id="log"></div>
+  </footer>
+
+  <footer class="statusbar">
+    <div class="keys">
+      <span><kbd>Space</kbd> <span data-i18n="space">probe</span></span>
+      <span><kbd>1–9</kbd> <span data-i18n="keysForm">form</span></span>
+      <span><kbd>M</kbd> <span data-i18n="keysMotion">motion</span></span>
+      <span><kbd>[ ]</kbd> <span data-i18n="keysSize">size</span></span>
+      <span><kbd>S</kbd> <span data-i18n="keysTimer">timer</span></span>
+      <span><kbd>R</kbd> <span data-i18n="keysReset">reset</span></span>
+      <span><kbd>N</kbd> <span data-i18n="keysNote">note</span></span>
+      <span><kbd>T</kbd> <span data-i18n="keysText">text</span></span>
+      <span><kbd>E</kbd> <span data-i18n="keysExport">export</span></span>
+    </div>
+    <span class="status-mode" id="status-mode">Sphere · motion · 1.00</span>
+    <div class="timer">
+      <button id="timer" class="timer-btn" type="button" title="Start/stop (S)" data-i18n-title="timerStartStop">⏱ 00:00.0</button>
+      <button id="timer-reset" class="timer-reset" type="button" title="Reset (R)" data-i18n-title="timerReset">↺</button>
+    </div>
+  </footer>
+</div>
+
+<dialog id="text-dialog">
+  <div class="dialog-body">
+    <h2 data-i18n="dialogTitle">Text for the probe</h2>
+    <textarea id="text-input" spellcheck="false" data-i18n-placeholder="dialogPlaceholder"></textarea>
+    <div class="dialog-actions">
+      <button type="button" id="cancel-text" class="ghost" data-i18n="cancel">Cancel</button>
+      <button type="button" id="apply-text" class="primary" data-i18n="apply">Apply</button>
+    </div>
+  </div>
+</dialog>
+
+<script src="three.min.js"></script>
+<script src="live-probe.js"></script>
+</body>
+
+</html>

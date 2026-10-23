@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>Live probe · prototype</title>
+<style>
+  :root {
+    --bg: #0e1013;
+    --panel: #15181c;
+    --panel-2: #191d22;
+    --border: #272c34;
+    --border-strong: #343b45;
+    --text: #d9dde3;
+    --muted: #8c939e;
+    --dim: #5f6671;
+    --accent: #d19a66;
+    --accent-soft: rgba(209, 154, 102, 0.12);
+    --accent-border: rgba(209, 154, 102, 0.5);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  body {
+    background: radial-gradient(circle at 70% 0%, rgba(209, 154, 102, 0.08), transparent 38%), var(--bg);
+    color: var(--text);
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  button { font: inherit; cursor: pointer; }
+  a { color: inherit; }
+  .page { min-height: 100vh; display: flex; flex-direction: column; }
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 28px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(21, 24, 28, 0.72);
+    backdrop-filter: blur(10px);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .mark {
+    width: 28px; height: 28px;
+    display: grid; place-items: center;
+    border: 1px solid var(--border-strong);
+    border-radius: 7px;
+    color: var(--accent);
+    background: var(--panel-2);
+  }
+  .product { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--dim); }
+  .sub { font-size: 13px; color: var(--text); }
+  .lang { display: inline-flex; padding: 2px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); }
+  .lang button {
+    min-width: 34px; height: 26px;
+    border: 0; border-radius: 4px;
+    background: transparent; color: var(--dim);
+    font-size: 10px; letter-spacing: 0.04em;
+  }
+  .lang button:hover { color: var(--text); }
+  .lang button.active { color: #f3dfc9; background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent-border); }
+
+  main { width: min(1080px, calc(100% - 40px)); margin: 0 auto; padding: 64px 0 40px; flex: 1; }
+  .hero { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr); gap: 28px; align-items: start; }
+  .eyebrow { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--dim); margin-bottom: 12px; }
+  h1 {
+    margin: 0 0 18px;
+    font-size: clamp(38px, 6vw, 64px);
+    line-height: 0.98;
+    letter-spacing: -0.04em;
+    font-weight: 500;
+  }
+  .lead { margin: 0 0 28px; max-width: 560px; font-size: 17px; color: var(--muted); }
+  .primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 42px;
+    padding: 0 18px;
+    border: 1px solid var(--accent-border);
+    border-radius: 6px;
+    background: var(--accent-soft);
+    color: #f3dfc9;
+    text-decoration: none;
+    font-size: 13px;
+  }
+  .primary:hover { background: rgba(209, 154, 102, 0.2); }
+  .note { margin: 18px 0 0; max-width: 520px; font-size: 12px; color: var(--dim); }
+  .card {
+    border: 1px solid var(--border);
+    background: var(--panel);
+    border-radius: 10px;
+    padding: 22px;
+  }
+  .card h2 { margin: 0 0 14px; font-size: 13px; font-weight: 500; letter-spacing: 0.04em; }
+  .steps { margin: 0; padding: 0; list-style: none; display: grid; gap: 11px; counter-reset: step; }
+  .steps li { display: grid; grid-template-columns: 24px 1fr; gap: 10px; color: var(--muted); font-size: 12.5px; }
+  .steps li::before {
+    counter-increment: step;
+    content: counter(step);
+    width: 24px; height: 24px;
+    display: grid; place-items: center;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    color: var(--accent);
+    font-size: 10px;
+  }
+  .bottom { margin-top: 28px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .bottom .card { padding: 18px 20px; }
+  .bottom p { margin: 0; color: var(--dim); font-size: 12px; }
+  .kbd {
+    display: inline-block;
+    border: 1px solid var(--border);
+    border-bottom-color: var(--border-strong);
+    border-radius: 4px;
+    padding: 1px 5px;
+    color: var(--muted);
+    font-size: 10px;
+    background: var(--bg);
+  }
+  footer {
+    width: min(1080px, calc(100% - 40px));
+    margin: 0 auto;
+    padding: 18px 0 26px;
+    border-top: 1px solid var(--border);
+    color: var(--dim);
+    font-size: 10px;
+    letter-spacing: 0.04em;
+  }
+  @media (max-width: 820px) {
+    main { padding-top: 40px; }
+    .hero, .bottom { grid-template-columns: 1fr; }
+    .topbar { padding: 14px 18px; }
+    main, footer { width: calc(100% - 32px); }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="topbar">
+    <div class="brand">
+      <div class="mark" aria-hidden="true">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <circle cx="8" cy="8" r="5.2" stroke="currentColor"/>
+          <circle cx="8" cy="8" r="1.6" fill="currentColor" stroke="none"/>
+        </svg>
+      </div>
+      <div>
+        <div class="product">Mind trainer</div>
+        <div class="sub">Live probe</div>
+      </div>
+    </div>
+    <div class="lang" role="group" aria-label="Language">
+      <button type="button" data-lang="en" class="active">EN</button>
+      <button type="button" data-lang="ru">RU</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <div class="eyebrow" data-i18n="eyebrow">Proof of concept</div>
+        <h1 data-i18n="title">Live probe</h1>
+        <p class="lead" data-i18n="lead">A prototype for finding what changes your thinking right now.</p>
+        <a id="open-probe" class="primary" href="live-probe.html?lang=en" data-i18n="open">Open the prototype</a>
+        <p class="note" data-i18n="note">This is a discovery instrument, not a finished trainer. It tests whether a probe can produce an immediate, noticeable change — and whether that change can be named.</p>
+      </div>
+      <div class="card">
+        <h2 data-i18n="howTitle">What to try</h2>
+        <ol class="steps">
+          <li><span data-i18n="step1">Read the text on the left.</span></li>
+          <li><span data-i18n="step2">Press <span class="kbd">Space</span> to switch the probe on and off.</span></li>
+          <li><span data-i18n="step3">Rate the change and write one sentence about what changed.</span></li>
+          <li><span data-i18n="step4">Try different forms, motion, and size.</span></li>
+          <li><span data-i18n="step5">Use the timer (<span class="kbd">S</span>) to compare reading speed.</span></li>
+          <li><span data-i18n="step6">Switch the text (<span class="kbd">T</span>) to see whether the effect survives new material.</span></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="bottom">
+      <div class="card">
+        <h2 data-i18n="controlsTitle">Controls</h2>
+        <p data-i18n="controls"><span class="kbd">Space</span> probe · <span class="kbd">1–9</span> form · <span class="kbd">M</span> motion · <span class="kbd">[ ]</span> size · <span class="kbd">S</span> timer · <span class="kbd">R</span> reset · <span class="kbd">N</span> note · <span class="kbd">T</span> text · <span class="kbd">E</span> export</p>
+      </div>
+      <div class="card">
+        <h2 data-i18n="privacyTitle">Data</h2>
+        <p data-i18n="privacy">Notes and settings stay in your browser. Export them as JSON from the prototype.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span data-i18n="footer">Prototype · English / Russian · Three.js r128</span>
+  </footer>
+</div>
+
+<script>
+  const I18N = {
+    en: {
+      pageTitle: "Live probe · prototype",
+      eyebrow: "Proof of concept",
+      title: "Live probe",
+      lead: "A prototype for finding what changes your thinking right now.",
+      open: "Open the prototype",
+      note: "This is a discovery instrument, not a finished trainer. It tests whether a probe can produce an immediate, noticeable change — and whether that change can be named.",
+      howTitle: "What to try",
+      step1: "Read the text on the left.",
+      step2: "Press <span class=\"kbd\">Space</span> to switch the probe on and off.",
+      step3: "Rate the change and write one sentence about what changed.",
+      step4: "Try different forms, motion, and size.",
+      step5: "Use the timer (<span class=\"kbd\">S</span>) to compare reading speed.",
+      step6: "Switch the text (<span class=\"kbd\">T</span>) to see whether the effect survives new material.",
+      controlsTitle: "Controls",
+      controls: "<span class=\"kbd\">Space</span> probe · <span class=\"kbd\">1–9</span> form · <span class=\"kbd\">M</span> motion · <span class=\"kbd\">[ ]</span> size · <span class=\"kbd\">S</span> timer · <span class=\"kbd\">R</span> reset · <span class=\"kbd\">N</span> note · <span class=\"kbd\">T</span> text · <span class=\"kbd\">E</span> export",
+      privacyTitle: "Data",
+      privacy: "Notes and settings stay in your browser. Export them as JSON from the prototype.",
+      footer: "Prototype · English / Russian · Three.js r128"
+    },
+    ru: {
+      pageTitle: "Live probe · прототип",
+      eyebrow: "Проверка идеи",
+      title: "Live probe",
+      lead: "Прототип для поиска того, что меняет ваше мышление прямо сейчас.",
+      open: "Открыть прототип",
+      note: "Это инструмент обнаружения, а не готовый тренажёр. Он проверяет, может ли проба дать немедленное заметное изменение — и можно ли его назвать.",
+      howTitle: "Что попробовать",
+      step1: "Прочитай текст слева.",
+      step2: "Нажимай <span class=\"kbd\">Space</span>, чтобы включать и выключать пробу.",
+      step3: "Оцени изменение и запиши одну фразу о том, что изменилось.",
+      step4: "Попробуй разные формы, движение и размер.",
+      step5: "Используй таймер (<span class=\"kbd\">S</span>), чтобы сравнить скорость чтения.",
+      step6: "Смени текст (<span class=\"kbd\">T</span>), чтобы проверить, держится ли эффект на новом материале.",
+      controlsTitle: "Управление",
+      controls: "<span class=\"kbd\">Space</span> проба · <span class=\"kbd\">1–9</span> форма · <span class=\"kbd\">M</span> движение · <span class=\"kbd\">[ ]</span> размер · <span class=\"kbd\">S</span> таймер · <span class=\"kbd\">R</span> сброс · <span class=\"kbd\">N</span> заметка · <span class=\"kbd\">T</span> текст · <span class=\"kbd\">E</span> экспорт",
+      privacyTitle: "Данные",
+      privacy: "Заметки и настройки остаются в браузере. Экспортируй их в JSON из прототипа.",
+      footer: "Прототип · English / Russian · Three.js r128"
+    }
+  };
+
+  const LANG_KEY = "mindTrainer.lang";
+  const state = { lang: loadLang() };
+
+  function loadLang() {
+    try {
+      const requested = new URLSearchParams(location.search).get("lang");
+      if (requested === "en" || requested === "ru") return requested;
+    } catch (err) {}
+    try {
+      const saved = localStorage.getItem(LANG_KEY);
+      if (saved === "en" || saved === "ru") return saved;
+    } catch (err) {}
+    return "en";
+  }
+
+  function applyLang() {
+    const dict = I18N[state.lang];
+    document.documentElement.lang = state.lang;
+    document.title = dict.pageTitle;
+    document.querySelectorAll("[data-i18n]").forEach((element) => {
+      element.innerHTML = dict[element.dataset.i18n];
+    });
+    document.querySelectorAll("[data-lang]").forEach((button) => {
+      button.classList.toggle("active", button.dataset.lang === state.lang);
+    });
+    document.getElementById("open-probe").href = "live-probe.html?lang=" + state.lang;
+  }
+
+  function setLang(lang) {
+    if (lang !== "en" && lang !== "ru") return;
+    state.lang = lang;
+    try {
+      localStorage.setItem(LANG_KEY, lang);
+    } catch (err) {}
+    applyLang();
+  }
+
+  document.querySelectorAll("[data-lang]").forEach((button) => {
+    button.addEventListener("click", () => setLang(button.dataset.lang));
+  });
+
+  applyLang();
+</script>
+</body>
+</html>
