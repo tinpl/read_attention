@@ -1,14 +1,14 @@
-# Live probe — prototype
+# Live probe
 
-A small browser prototype for finding what changes your thinking **right now**.
+A browser prototype for finding what changes your thinking **right now**.
 
 It is a discovery instrument, not a validated trainer. It tests whether a visual probe can produce an immediate, noticeable change — and whether that change can be named and compared.
 
-## Open
+## Run
 
-Unzip the bundle and open `index.html`, or open `live-probe.html` directly. No build step, no network, no server required.
+Open `index.html` for the landing page, or `live-probe.html` to go straight to the prototype. There is no build step, no network access, and no server required.
 
-If your browser blocks local files, run a local server in this folder:
+If your browser blocks local files, serve this folder:
 
 ```bash
 python -m http.server 8000
@@ -16,9 +16,11 @@ python -m http.server 8000
 
 Then open `http://localhost:8000/`.
 
+The probe uses WebGL. If it cannot start, the prototype shows an error message instead of the 3D scene.
+
 ## Language
 
-English is the default. Switch **EN / RU** in the top right. The choice is stored locally and carried into the probe.
+English is the default. Switch **EN / RU** in the top right. The choice is stored locally and carried into the prototype.
 
 ## Controls
 
@@ -26,21 +28,24 @@ English is the default. Switch **EN / RU** in the top right. The choice is store
 |---|---|
 | `Space` | Probe on / off |
 | `1–9` | Form |
-| `M` | Motion |
+| `M` | Motion on / off |
 | `[` `]` | Size |
 | `S` | Timer start / stop |
 | `R` | Reset timer |
 | `N` | Focus note |
-| `Enter` | Save note |
+| `Enter` | Save note (while the note field is focused) |
 | `T` | Next text |
 | `E` | Export JSON |
-| `1–5` | Strength of change |
+
+Rate the change with **1–5** (Weak to Very strong) next to the note field. The rating clears after each save.
 
 ## What the prototype tests
 
-The current question is immediate modulation: does a form, its motion, or its size change how you read **while it is present**? The log records the form, motion, size, text, rating, reading time, and your one-line observation. The summary compares forms, motion versus still, and "no probe" baseline.
+The current question is immediate modulation: does a form, its motion, or its size change how you read **while it is present**? The log records the form, motion, size, text, rating, reading time, and your one-line observation. The summary compares forms, motion versus still, and the "no probe" baseline.
 
 A useful result is not only "this form works" but also "this family of forms works" or "only this one form works". The second is an anchor; the first is closer to a parameter.
+
+Switch texts with `T`, or paste your own via **Custom text**, to see whether an effect survives new material.
 
 ## Data
 
@@ -49,57 +54,3 @@ Notes and settings stay in your browser (`localStorage`). Use **Export** to save
 ## Third-party
 
 Bundled Three.js r128, MIT license, copyright Three.js Authors.
-
----
-
-# Live probe — прототип
-
-Небольшой браузерный прототип для поиска того, что меняет мышление **прямо сейчас**.
-
-Это инструмент обнаружения, а не проверенный тренажёр. Он проверяет, может ли визуальная проба дать немедленное заметное изменение — и можно ли это изменение назвать и сравнить.
-
-## Как открыть
-
-Распакуй архив и открой `index.html` или `live-probe.html` напрямую. Сборка, сеть и сервер не нужны.
-
-Если браузер блокирует локальные файлы, запусти локальный сервер в этой папке:
-
-```bash
-python -m http.server 8000
-```
-
-Затем открой `http://localhost:8000/`.
-
-## Язык
-
-По умолчанию английский. Переключение **EN / RU** в правом верхнем углу. Выбор сохраняется локально и переносится в прототип.
-
-## Управление
-
-| Клавиша | Действие |
-|---|---|
-| `Space` | Проба вкл / выкл |
-| `1–9` | Форма |
-| `M` | Движение |
-| `[` `]` | Размер |
-| `S` | Таймер старт / стоп |
-| `R` | Сброс таймера |
-| `N` | Перейти к заметке |
-| `Enter` | Записать заметку |
-| `T` | Следующий текст |
-| `E` | Экспорт JSON |
-| `1–5` | Сила изменения |
-
-## Что проверяет прототип
-
-Текущий вопрос — немедленная модуляция: меняет ли форма, её движение или размер то, как ты читаешь **пока она присутствует**. Журнал хранит форму, движение, размер, текст, оценку, время чтения и одну фразу наблюдения. Сводка сравнивает формы, движение и статику, а также базовую линию «без пробы».
-
-Полезный результат — не только «эта форма работает», но и «работает это семейство форм» или «работает только эта одна форма». Второе — якорь; первое ближе к параметру.
-
-## Данные
-
-Заметки и настройки остаются в браузере (`localStorage`). Кнопка **Экспорт** сохраняет JSON. Кнопка **Очистить** удаляет заметки и события из браузера.
-
-## Третья сторона
-
-В комплект входит Three.js r128, лицензия MIT, copyright Three.js Authors.
