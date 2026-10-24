@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>Grid probe · mind trainer</title>
+<style>
+  :root {
+    --bg: #0e1013;
+    --panel: #15181c;
+    --panel-2: #191d22;
+    --panel-3: #1e232a;
+    --border: #272c34;
+    --border-strong: #343b45;
+    --text: #d9dde3;
+    --muted: #8c939e;
+    --dim: #5f6671;
+    --accent: #d19a66;
+    --accent-soft: rgba(209, 154, 102, 0.12);
+    --accent-border: rgba(209, 154, 102, 0.5);
+    --danger: #c47a72;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    font-size: 12px;
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+  }
+  button, input, select { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  button:focus-visible, input:focus-visible, select:focus-visible {
+    outline: 1px solid var(--accent);
+    outline-offset: 2px;
+  }
+  kbd {
+    font: 10px/1 "Segoe UI", system-ui, sans-serif;
+    color: var(--dim);
+    border: 1px solid var(--border);
+    border-bottom-color: var(--border-strong);
+    border-radius: 4px;
+    padding: 2px 4px;
+    background: var(--bg);
+  }
+  .app { height: 100%; display: grid; grid-template-rows: auto minmax(0, 1fr) 320px 28px; }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+    padding: 10px 14px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .mark {
+    width: 26px; height: 26px;
+    display: grid; place-items: center;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    color: var(--accent);
+    background: var(--panel-2);
+    flex: 0 0 26px;
+  }
+  .product { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--dim); }
+  .title { font-size: 13px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 240px; }
+  .controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-left: auto; }
+  .control {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--dim);
+    white-space: nowrap;
+  }
+  .control select {
+    height: 26px;
+    border: 1px solid var(--border);
+    background: var(--panel-2);
+    color: var(--muted);
+    border-radius: 5px;
+    padding: 0 6px;
+    font-size: 10.5px;
+  }
+  .tool, .primary {
+    height: 27px;
+    padding: 0 9px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    background: var(--panel-2);
+    color: var(--muted);
+    font-size: 10.5px;
+    white-space: nowrap;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    transition: 0.12s ease;
+  }
+  .tool:hover { color: var(--text); border-color: var(--border-strong); background: var(--panel-3); }
+  .primary { color: #f3dfc9; border-color: var(--accent-border); background: var(--accent-soft); }
+  .primary:hover { background: rgba(209, 154, 102, 0.2); }
+  .lang { display: inline-flex; padding: 2px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); }
+  .lang button {
+    min-width: 28px; height: 24px;
+    border: 0; border-radius: 4px;
+    background: transparent; color: var(--dim);
+    font-size: 10px; letter-spacing: 0.04em;
+  }
+  .lang button:hover { color: var(--text); }
+  .lang button.active { color: #f3dfc9; background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent-border); }
+
+  .workspace { display: grid; grid-template-columns: minmax(0, 1fr) 460px; min-height: 0; }
+  .text-pane { min-width: 0; min-height: 0; overflow: auto; padding: 34px 48px 60px; background: var(--bg); }
+  .text-pane::-webkit-scrollbar { width: 8px; }
+  .text-pane::-webkit-scrollbar-thumb { background: #2b3139; border-radius: 4px; }
+  .text-head { max-width: 760px; margin: 0 auto 18px; display: flex; justify-content: space-between; gap: 16px; align-items: baseline; }
+  .eyebrow { font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--dim); }
+  .hint { font-size: 10px; color: var(--dim); }
+  #text {
+    max-width: 760px;
+    margin: 0 auto;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 19px;
+    line-height: 1.75;
+    color: #d9dde3;
+  }
+  #text p { margin: 0 0 1.05em; }
+  .text-foot {
+    max-width: 760px;
+    margin: 28px auto 0;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    color: var(--dim);
+    font-size: 10px;
+  }
+
+  .probe-pane {
+    position: relative;
+    min-height: 0;
+    border-left: 1px solid var(--border);
+    background:
+      radial-gradient(circle at 50% 42%, rgba(209, 154, 102, 0.07), transparent 62%),
+      #111318;
+    overflow: hidden;
+  }
+  #grid {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .grid-line {
+    stroke: #8a7a66;
+    stroke-width: 1.2;
+    opacity: 0.8;
+    vector-effect: non-scaling-stroke;
+  }
+  .probe-hud {
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--dim);
+    pointer-events: none;
+  }
+
+  .log-pane {
+    border-top: 1px solid var(--border);
+    background: var(--panel);
+    padding: 9px 14px 12px;
+    display: grid;
+    grid-template-rows: auto auto auto auto auto auto minmax(0, 1fr);
+    gap: 6px;
+    min-height: 0;
+  }
+  .log-head { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .summary { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; min-width: 0; }
+  .chip {
+    border: 1px solid var(--border);
+    background: var(--panel-2);
+    border-radius: 999px;
+    padding: 3px 8px;
+    font-size: 10px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .chip b { color: var(--text); font-weight: 500; }
+  .rating-line { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .rating-label { width: 74px; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); }
+  .rating { display: inline-flex; gap: 2px; }
+  .rating button {
+    width: 24px; height: 22px;
+    border: 1px solid var(--border);
+    background: var(--panel-2);
+    color: var(--dim);
+    border-radius: 4px;
+    font-size: 10px;
+  }
+  .rating button.active { color: #f3dfc9; border-color: var(--accent-border); background: var(--accent-soft); }
+  .note-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  #note {
+    flex: 1;
+    min-width: 180px;
+    height: 28px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    border-radius: 5px;
+    padding: 0 9px;
+    color: var(--text);
+  }
+  #note::placeholder { color: var(--dim); }
+  .log { overflow: auto; display: flex; flex-direction: column; gap: 5px; min-height: 0; }
+  .log::-webkit-scrollbar { width: 8px; }
+  .log::-webkit-scrollbar-thumb { background: #2b3139; border-radius: 4px; }
+  .log-empty { color: var(--dim); font-size: 10.5px; padding: 4px 2px; }
+  .log-entry { border: 1px solid var(--border); background: var(--panel-2); border-radius: 5px; padding: 6px 8px; }
+  .log-top { display: flex; align-items: center; gap: 8px; font-size: 9.5px; color: var(--dim); flex-wrap: wrap; }
+  .log-form { color: var(--accent); text-transform: uppercase; letter-spacing: 0.1em; }
+  .log-ratings { margin-left: auto; color: var(--muted); }
+  .log-note { margin-top: 3px; font-size: 11.5px; color: var(--muted); line-height: 1.4; }
+  .log-note.empty { color: var(--dim); font-style: italic; }
+  .log-remove { border: 0; background: transparent; color: var(--dim); cursor: pointer; font-size: 13px; line-height: 1; padding: 0 2px; }
+  .log-remove:hover { color: var(--danger); }
+
+  .statusbar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0 14px;
+    background: var(--panel-2);
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 10px;
+    white-space: nowrap;
+    overflow-x: auto;
+  }
+  .keys { display: flex; align-items: center; gap: 14px; }
+  .keys > span { display: inline-flex; align-items: center; gap: 5px; }
+  .statusbar kbd { color: var(--text); border-color: var(--border-strong); }
+  .status-mode { margin-left: auto; color: var(--dim); }
+
+  @media (max-width: 980px) {
+    .app { grid-template-rows: auto minmax(0, 1fr) 360px 28px; }
+    .workspace { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) 360px; }
+    .probe-pane { border-left: 0; border-top: 1px solid var(--border); }
+    .text-pane { padding: 24px 22px 40px; }
+    #text { font-size: 18px; }
+    .title { max-width: 170px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="mark" aria-hidden="true">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M3 2v12M8 2v12M13 2v12M2 3h12M2 8h12M2 13h12" stroke="currentColor" stroke-width="1"/>
+        </svg>
+      </div>
+      <div>
+        <div class="product" data-i18n="product">Grid probe</div>
+        <div class="title" id="text-title">The Index</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <label class="control"><span data-i18n="condition">Condition</span>
+        <select id="condition">
+          <option value="off">Off</option>
+          <option value="parallel">Parallel</option>
+          <option value="one">One</option>
+          <option value="few">Few</option>
+          <option value="grid" selected>Grid</option>
+        </select>
+      </label>
+      <label class="control"><span data-i18n="angle">Angle</span>
+        <select id="angle">
+          <option value="90" selected>90°</option>
+          <option value="60">60°</option>
+          <option value="45">45°</option>
+        </select>
+      </label>
+      <button id="next-text" class="tool" data-i18n="nextText">Text →</button>
+      <button id="export" class="tool" data-i18n="export">Export</button>
+      <a class="tool" href="form-editor.html" data-i18n="linkForm">Form</a>
+      <a class="tool" href="route-player.html" data-i18n="linkRoute">Route</a>
+      <a class="tool" href="live-probe.html" data-i18n="linkProbe">Probe</a>
+      <div class="lang" role="group" aria-label="Language" data-i18n-aria="langLabel">
+        <button type="button" data-lang="en" class="active">EN</button>
+        <button type="button" data-lang="ru">RU</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <section class="text-pane">
+      <div class="text-head">
+        <span class="eyebrow" data-i18n="textEyebrow">Text for the grid</span>
+        <span class="hint" data-i18n="textHint">Read and switch the grid. Watch the action, not the result.</span>
+      </div>
+      <article id="text"></article>
+      <div class="text-foot">
+        <span id="word-count">—</span>
+        <span data-i18n="textFoot">The grid stays static while you read</span>
+      </div>
+    </section>
+
+    <section class="probe-pane">
+      <svg id="grid" viewBox="0 0 600 600" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+        <g id="horizontal-lines"></g>
+        <g id="vertical-lines"></g>
+      </svg>
+      <div class="probe-hud">
+        <span id="condition-label">Grid · 90°</span>
+        <span id="count-label">25 intersections</span>
+      </div>
+    </section>
+  </main>
+
+  <footer class="log-pane">
+    <div class="log-head">
+      <span class="eyebrow" data-i18n="notes">Observations</span>
+      <div class="summary" id="summary"></div>
+      <button id="clear-log" class="tool" data-i18n="clear">Clear</button>
+    </div>
+
+    <div class="rating-line">
+      <span class="rating-label" data-i18n="effect">Effect</span>
+      <div class="rating" data-rating="effect">
+        <button type="button" data-value="1">1</button><button type="button" data-value="2">2</button><button type="button" data-value="3">3</button><button type="button" data-value="4">4</button><button type="button" data-value="5">5</button>
+      </div>
+    </div>
+    <div class="rating-line">
+      <span class="rating-label" data-i18n="flow">Flow</span>
+      <div class="rating" data-rating="flow">
+        <button type="button" data-value="1">1</button><button type="button" data-value="2">2</button><button type="button" data-value="3">3</button><button type="button" data-value="4">4</button><button type="button" data-value="5">5</button>
+      </div>
+    </div>
+    <div class="rating-line">
+      <span class="rating-label" data-i18n="clarity">Clarity</span>
+      <div class="rating" data-rating="clarity">
+        <button type="button" data-value="1">1</button><button type="button" data-value="2">2</button><button type="button" data-value="3">3</button><button type="button" data-value="4">4</button><button type="button" data-value="5">5</button>
+      </div>
+    </div>
+    <div class="rating-line">
+      <span class="rating-label" data-i18n="comfort">Comfort</span>
+      <div class="rating" data-rating="comfort">
+        <button type="button" data-value="1">1</button><button type="button" data-value="2">2</button><button type="button" data-value="3">3</button><button type="button" data-value="4">4</button><button type="button" data-value="5">5</button>
+      </div>
+    </div>
+
+    <div class="note-row">
+      <input id="note" placeholder="What changed — and where did the action go?" data-i18n-placeholder="notePlaceholder">
+      <button id="save-note" class="primary" data-i18n="save">Save</button>
+    </div>
+    <div class="log" id="log"></div>
+  </footer>
+
+  <footer class="statusbar">
+    <div class="keys">
+      <span><kbd>0–4</kbd> <span data-i18n="keyCondition">condition</span></span>
+      <span><kbd>A</kbd> <span data-i18n="keyAngle">angle</span></span>
+      <span><kbd>N</kbd> <span data-i18n="keyNote">note</span></span>
+      <span><kbd>T</kbd> <span data-i18n="keyText">text</span></span>
+      <span><kbd>E</kbd> <span data-i18n="keyExport">export</span></span>
+    </div>
+    <span class="status-mode" id="status-mode">Grid · 90° · 25 intersections</span>
+  </footer>
+</div>
+
+<script src="grid-probe.js"></script>
+</body>
+</html>
